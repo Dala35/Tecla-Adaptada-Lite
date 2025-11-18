@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tecla Adapta Lite – Interface Cognitiva Inclusiva</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#3498db',
+                        'dark-bg': '#1a1a1a',
+                        'card-bg': '#2a2a2a',
+                        // Cores temáticas para as línguas validadas
+                        'ckw-color': '#10b981', // Emerald para Cokwe (Chokwe)
+                        'knd-color': '#f59e0b', // Amber para Kimbundo
+                        'mbu-color': '#ef4444', // Red para Umbundu
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Custom style for body gradient -->
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #111827, #1f2937); /* Darker, modern gradient */
+            font-family: 'Inter', sans-serif;
+        }
+        .mic-active {
+            animation: pulse-mic 1s infinite;
+        }
+        @keyframes pulse-mic {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col items-center p-6 sm:p-10">
+    
+    <!-- Main Container -->
+    <div class="container bg-gray-800 rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-10 mt-6 transform transition-all duration-500 hover:shadow-primary-blue/30">
+        
+        <h1 class="text-3xl font-bold mb-4 text-center text-primary-blue">
+            <span class="mr-2">🧠</span> Tecla Adapta Lite
+        </h1>
+        <p class="text-base text-gray-300 text-center mb-6">
+            Escolhe, dita ou escreve. A vocalização e o destaque (manifestação) serão no idioma selecionado.
+        </p>
+
+        <!-- Configuração de Idioma e Fala/Escrita -->
+        <div class="flex flex-col gap-4 mb-8">
+            <!-- Selector de Língua para Vocalização -->
+            <div class="w-full">
+                <label for="lang-select" class="block text-sm font-medium text-gray-400 mb-2">Língua de Manifestação (Voz e Destaque):</label>
+                <select id="lang-select" onchange="mudarLinguaVocalizacao(this.value)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white appearance-none cursor-pointer focus:ring-primary-blue focus:border-primary-blue">
+                    <option value="ckw" selected>Cokwe (Chokwe)</option>
+                    <option value="knd">Kimbundo</option>
+                    <option value="mbu">Umbundu</option>
+                </select>
+            </div>
+
+            <!-- Reconhecimento de Fala e Botões de Tradução -->
+            <div class="flex gap-4">
+                <button id="mic-button" onclick="iniciarReconhecimentoDeFala()" class="flex-1 button-style bg-primary-blue hover:bg-blue-600 active:bg-blue-700 flex items-center justify-center py-3">
+                    <span class="text-2xl mr-2">🎤</span> Falar
+                </button>
+                <button id="translate-button" onclick="handleTextTranslation()" class="flex-1 button-style bg-gray-600 hover:bg-gray-700 active:bg-gray-800 flex items-center justify-center py-3">
+                    <span class="text-2xl mr-2">✍️</span> Traduzir Texto
+                </button>
+            </div>
+            
+            <!-- Campo de Input de Texto -->
+            <input 
+                type="text" 
+                id="text-input" 
+                placeholder="Escreva aqui a sua frase em Português..."
+                class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-primary-blue focus:border-primary-blue transition duration-200"
+                onkeydown="if(event.key === 'Enter') handleTextTranslation()"
+            />
+        </div>
+        
+        <!-- Interactive Grid (Novas Frases Validadas) -->
+        <div class="option-grid grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
+            <button onclick="selecionarExpressao('ola')" class="button-style bg-green-600 hover:bg-green-700 active:bg-green-700">
+                <span class="text-2xl block mb-1">☀️</span> Olá / Bom dia
+            </button>
+            <button onclick="selecionarExpressao('como_estas')" class="button-style bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800">
+                <span class="text-2xl block mb-1">🤔</span> Como estás?
+            </button>
+            <button onclick="selecionarExpressao('estou_bem')" class="button-style bg-teal-600 hover:bg-teal-700 active:bg-teal-800">
+                <span class="text-2xl block mb-1">✅</span> Estou bem
+            </button>
+            <button onclick="selecionarExpressao('obrigado')" class="button-style bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800">
+                <span class="text-2xl block mb-1">🙏</span> Obrigado(a)
+            </button>
+            <button onclick="selecionarExpressao('eu_te_amo')" class="button-style bg-red-600 hover:bg-red-700 active:bg-red-800">
+                <span class="text-2xl block mb-1">❤️</span> Eu te amo
+            </button>
+            <button onclick="selecionarExpressao('quero_comer')" class="button-style bg-pink-600 hover:bg-pink-700 active:bg-pink-800">
+                <span class="text-2xl block mb-1">🍽️</span> Quero comer
+            </button>
+        </div>
+
+        <!-- Output Display -->
+        <div id="resposta" class="output mt-10 bg-gray-900 border border-primary-blue/50 p-6 rounded-xl text-center text-lg font-medium min-h-[7rem] flex flex-col justify-center transition duration-300">
+            <p class="text-gray-400">Clique numa opção, digite uma frase ou use o microfone para começar.</p>
+        </div>
+        
+        <div id="aviso_traducao" class="text-xs text-primary-blue mt-4 text-center p-2 bg-primary-blue/20 rounded-lg hidden">
+            <p><strong>PROJETO DALA CURE OS:</strong> As traduções são validadas pela nossa co-criação. Para frases livres (texto/voz), usamos IA de tradução.</p>
+        </div>
+    </div>
+
+    <!-- Global Button Style (Tailwind utility class extension) -->
+    <style>
+        .button-style {
+            padding: 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+        }
+        .button-style:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+    
+    <footer class="mt-10 text-sm text-gray-400 text-center max-w-xl">
+        Criado por Dala De Carvalho – Projeto DALA CURE OS. | <span class="text-primary-blue font-semibold">Linguagem adaptada para Cokwe, Kimbundo e Umbundu.</span>
+    </footer>
+
+    <!-- JavaScript for Functionality -->
+    <script>
+        // Variável global para rastrear a língua selecionada para vocalização (ckw, knd, mbu)
+        let linguaVocalizacao = 'ckw';
+        const apiKey = ""; // Chave da API do Gemini (Vazio para ambiente Canvas)
+
+        // Estrutura de dados com as traduções VALIDADAS por Dala
+        const expressoes = {
+            ola: {
+                pt: 'Olá / Bom dia',
+                ckw: 'Moyo wenu',
+                knd: 'Dizanga',
+                mbu: 'Moyo u wa'
+            },
+            como_estas: {
+                pt: 'Como estás?',
+                ckw: 'Kanawa?',
+                knd: 'Uejinga uê?',
+                mbu: 'Oku li ndati?'
+            },
+            estou_bem: {
+                pt: 'Estou bem',
+                ckw: 'Ngulhi kanawa',
+                knd: 'Nga ri kilembu',
+                mbu: 'Ndi li pala'
+            },
+            obrigado: {
+                pt: 'Obrigado(a)',
+                ckw: 'Naçakwila',
+                knd: 'Kutulenda',
+                mbu: 'Pandula'
+            },
+            eu_te_amo: {
+                pt: 'Eu te amo',
+                ckw: 'Na ku zanga',
+                knd: 'Ngi ku zola',
+                mbu: 'Ndi ku sole'
+            },
+            quero_comer: {
+                pt: 'Quero comer',
+                ckw: 'Nguna zangue kulhia',
+                knd: 'Ngi zanda kulia',
+                mbu: 'Ndiongola liã'
+            }
+        };
+
+        const linguasInfo = {
+            ckw: { nome: 'Cokwe (Chokwe)', cor: 'ckw-color' },
+            knd: { nome: 'Kimbundo', cor: 'knd-color' },
+            mbu: { nome: 'Umbundu', cor: 'mbu-color' },
+        };
+
+        /**
+         * Atualiza a variável global com a língua selecionada.
+         * @param {string} novaLingua - Chave da língua ('ckw', 'knd', ou 'mbu').
+         */
+        function mudarLinguaVocalizacao(novaLingua) {
+            linguaVocalizacao = novaLingua;
+            const nomeLingua = linguasInfo[novaLingua].nome;
+            const output = document.getElementById('resposta');
+            output.innerHTML = `<p class="text-xl font-semibold text-primary-blue">Manifestação (Voz e Destaque) alterada para: ${nomeLingua}</p><p class="text-sm text-gray-400">Selecione, fale ou digite a sua próxima frase.</p>`;
+        }
+
+        /**
+         * Exibe a expressão traduzida e vocaliza usando a língua selecionada.
+         * @param {string} chave - A chave (key) da expressão no objeto 'expressoes'.
+         */
+        function selecionarExpressao(chave) {
+            const expressao = expressoes[chave];
+            exibirEfalar(expressao);
+        }
+
+        /**
+         * Lida com a lógica de exibição e vocalização, dando destaque máximo à língua selecionada.
+         * @param {object} expressao - O objeto contendo a frase nas 4 línguas.
+         */
+        function exibirEfalar(expressao) {
+            const output = document.getElementById('resposta');
+            const aviso = document.getElementById('aviso_traducao');
+            aviso.classList.remove('hidden');
+
+            const destaque = (lang) => {
+                const isSelected = lang === linguaVocalizacao;
+                const cor = linguasInfo[lang].cor;
+                const textSize = isSelected ? 'text-3xl' : 'text-lg';
+                const textColor = isSelected ? `text-${cor}` : 'text-gray-300';
+                const fontStyle = isSelected ? 'font-extrabold' : 'font-semibold';
+                const tag = isSelected ? '(VOZ E DESTAQUE)' : '';
+
+                return `
+                    <div class="py-1">
+                        <p class="text-sm font-light text-gray-400">${linguasInfo[lang].nome} ${tag}</p>
+                        <em class="${textSize} ${textColor} ${fontStyle} transition duration-300">${expressao[lang]}</em>
+                    </div>
+                `;
+            };
+
+            // Template literal para o novo output multi-linguagem
+            output.innerHTML = `
+                <div class="flex flex-col space-y-4 text-left w-full mx-auto">
+                    <div class="border-b border-gray-700 pb-2">
+                        <p class="text-sm font-light text-gray-400">Português (Input)</p>
+                        <strong class="text-xl text-white">${expressao.pt}</strong>
+                    </div>
+                    
+                    ${destaque('ckw')}
+                    ${destaque('knd')}
+                    ${destaque('mbu')}
+                </div>
+            `;
+            
+            // Text-to-Speech (TTS)
+            const fraseParaVoz = expressao[linguaVocalizacao];
+            falar(fraseParaVoz);
+        }
+
+        /**
+         * Função principal de vocalização (TTS)
+         * @param {string} texto - O texto a ser vocalizado.
+         */
+        function falar(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const audio = new SpeechSynthesisUtterance(texto);
+                
+                // Tenta usar uma voz de pt-AO se disponível, senão usa a do navegador
+                const voices = window.speechSynthesis.getVoices();
+                const ptVoice = voices.find(v => v.lang.startsWith('pt-') || v.lang.startsWith('pt_'));
+                if (ptVoice) {
+                    audio.voice = ptVoice;
+                }
+                
+                audio.lang = 'pt-AO'; // Angola Portuguese locale hint
+                audio.rate = 0.9; 
+                
+                window.speechSynthesis.speak(audio);
+            } else {
+                console.error("Speech Synthesis API não suportada neste navegador.");
+            }
+        }
+
+        // --- Tradução de Texto (Input Manual) ---
+
+        async function handleTextTranslation() {
+            const inputElement = document.getElementById('text-input');
+            const texto = inputElement.value.trim();
+            const output = document.getElementById('resposta');
+
+            if (!texto) {
+                output.innerHTML = '<p class="text-xl text-red-500 font-semibold">Por favor, escreva uma frase para traduzir.</p>';
+                return;
+            }
+
+            output.innerHTML = '<p class="text-xl text-primary-blue font-semibold animate-pulse">A comunicar com a IA para tradução...</p>';
+            
+            try {
+                const translations = await traduzirComIA(texto);
+                
+                const expressaoTraduzida = {
+                    pt: texto,
+                    ckw: translations.ckw || 'Erro na tradução Cokwe.',
+                    knd: translations.knd || 'Erro na tradução Kimbundo.',
+                    mbu: translations.mbu || 'Erro na tradução Umbundu.',
+                };
+
+                exibirEfalar(expressaoTraduzida);
+                inputElement.value = ''; // Limpa o input após a tradução
+            } catch (error) {
+                output.innerHTML = `<p class="text-xl text-red-500 font-semibold">Erro de Tradução: A IA não respondeu.</p><p class="text-sm text-gray-400">${error.message}</p>`;
+            }
+        }
+
+        /**
+         * Simulação da chamada à API do Gemini para tradução em JSON estruturado.
+         * @param {string} userQuery - Frase em Português a ser traduzida.
+         * @returns {Promise<object>} Objeto JSON com as traduções {ckw, knd, mbu}.
+         */
+        async function traduzirComIA(userQuery) {
+            const systemPrompt = "Aja como um linguista Angolano. Dada uma frase em Português, traduza-a para Cokwe (ckw), Kimbundo (knd) e Umbundu (mbu). A resposta deve ser estritamente um objeto JSON com essas três chaves. Não inclua qualquer texto introdutório ou explicativo fora do JSON. Priorize traduções naturais e gramaticalmente corretas.";
+            
+            const payload = {
+                contents: [{ parts: [{ text: `Traduz a seguinte frase para Cokwe, Kimbundo e Umbundu: "${userQuery}"` }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "ckw": { "type": "STRING", "description": "Tradução para Cokwe" },
+                            "knd": { "type": "STRING", "description": "Tradução para Kimbundo" },
+                            "mbu": { "type": "STRING", "description": "Tradução para Umbundu" }
+                        },
+                        "propertyOrdering": ["ckw", "knd", "mbu"]
+                    }
+                }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const maxRetries = 3;
+            let delay = 1000;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API returned status ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (jsonText) {
+                        // O JSON retornado deve ser parseado
+                        return JSON.parse(jsonText);
+                    } else {
+                        throw new Error("Resposta da IA vazia ou malformada.");
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error; // Re-throw the error on final attempt
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Exponential backoff
+                }
+            }
+        }
+
+
+        // --- Reconhecimento de Fala (Speech-to-Text) ---
+
+        let recognition;
+        let isListening = false;
+
+        // Verifica se a API de Reconhecimento de Fala está disponível
+        if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Parar após uma frase
+            recognition.interimResults = false;
+            recognition.lang = 'pt-PT'; // Foco em reconhecer Português
+
+            recognition.onstart = () => {
+                isListening = true;
+                const micButton = document.getElementById('mic-button');
+                micButton.innerHTML = '<span class="text-2xl mr-2">🔴</span> A Ouvir...';
+                micButton.classList.add('mic-active');
+                document.getElementById('resposta').innerHTML = '<p class="text-xl text-primary-blue font-semibold animate-pulse">A aguardar a sua fala...</p>';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                const micButton = document.getElementById('mic-button');
+                micButton.innerHTML = '<span class="text-2xl mr-2">🎤</span> Falar';
+                micButton.classList.remove('mic-active');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                processarComandoDeVoz(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Erro de reconhecimento de fala:', event.error);
+                document.getElementById('resposta').innerHTML = `<p class="text-xl text-red-500 font-semibold">Erro de Fala: ${event.error}</p><p class="text-sm text-gray-400">Verifique o microfone e tente novamente.</p>`;
+            };
+        } else {
+            console.warn('API de Reconhecimento de Fala não suportada neste navegador.');
+        }
+
+        /**
+         * Inicia ou para o reconhecimento de fala.
+         */
+        function iniciarReconhecimentoDeFala() {
+            if (!recognition) {
+                document.getElementById('resposta').innerHTML = '<p class="text-xl text-red-500 font-semibold">Reconhecimento de Fala indisponível neste navegador.</p>';
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        /**
+         * Processa a transcrição e tenta encontrar uma correspondência ou tradução via IA.
+         * @param {string} comando - O texto reconhecido.
+         */
+        async function processarComandoDeVoz(comando) {
+            const output = document.getElementById('resposta');
+            
+            // 1. Tenta encontrar uma correspondência exata nas frases pré-definidas
+            let expressaoEncontrada = null;
+            for (const key in expressoes) {
+                const ptFrase = expressoes[key].pt.toLowerCase();
+                // Procura correspondência
+                if (ptFrase.includes(comando.toLowerCase()) || comando.toLowerCase().includes(ptFrase)) {
+                    expressaoEncontrada = expressoes[key];
+                    break;
+                }
+            }
+            
+            if (expressaoEncontrada) {
+                // Se encontrou, usa as frases pré-definidas
+                exibirEfalar(expressaoEncontrada);
+            } else {
+                // 2. Se não encontrou, envia para a tradução da IA
+                output.innerHTML = `<p class="text-xl text-primary-blue font-semibold animate-pulse">Comando de voz não predefinido. A traduzir via IA: "${comando}"</p>`;
+                
+                try {
+                    const translations = await traduzirComIA(comando);
+                    const expressaoTraduzida = {
+                        pt: comando,
+                        ckw: translations.ckw || 'N/A',
+                        knd: translations.knd || 'N/A',
+                        mbu: translations.mbu || 'N/A',
+                    };
+                    exibirEfalar(expressaoTraduzida);
+                } catch (error) {
+                    output.innerHTML = `<p class="text-xl text-red-500 font-semibold">Erro de Tradução (Voz): A IA não conseguiu traduzir.</p><p class="text-sm text-gray-400">Tente outra frase ou use os botões.</p>`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>```
+
