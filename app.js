@@ -20,7 +20,10 @@
         if(!exp) return;
         window.KizobaUI.displayExpression(exp);
     }
-
+function mudarLingua(lang){
+    linguaAtiva=lang;
+    window.KizobaCore.setLanguage(lang); // Atualiza o core
+}
     async function handleInputTranslation(texto){
         if(!texto){
             const inputEl=document.getElementById('text-input');
