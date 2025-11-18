@@ -1,0 +1,9 @@
+body { font-family: 'Inter', sans-serif; }
+.text-primary-blue { color: #3498db; }
+.mic-active { animation: pulse-mic 1s infinite; }
+@keyframes pulse-mic {
+    0%,100% { box-shadow: 0 0 0 0 rgba(52, 152, 219,0.7);}
+    70% { box-shadow: 0 0 0 10px rgba(52, 152, 219,0);}
+}
+button { transition: transform 0.2s; }
+button:hover { transform: scale(1.05); }
